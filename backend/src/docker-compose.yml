@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  flask_app:
+  # setting the name of the container and image
+    container_name: flask_app
+    image: daviddamico/flask_app
+    # build the image
+    build: .
+    # exposes the port for the flask_app
+    ports:
+      - "4000:4000"
+    # variables for the environment
+    environment:
+      - DB_URL=mariadb://student:student@flask_db:3306/student
+    # depends on the database
+    depends_on:
+      - flask_db
+  # initialization of the database    
+  flask_db:
+  # setting the name of the container and image
+    container_name: flask_db
+    image: mariadb:latest
+    # exposes the port for the database
+    ports:
+      - "3306:3306"
+    # variables for the environment
+    environment:
+      - MARIADB_ROOT_PASSWORD=admin
+      - MARIADB_DATABASE=student
+      - MARIADB_USER=student
+      - MARIADB_PASSWORD=student
+      - MARIADB_HOST=flask_db
+    # mount the volume
+    volumes:
+      - maria_data:/var/lib/wi22027
+# create the volume
+volumes:
+  maria_data: {}
