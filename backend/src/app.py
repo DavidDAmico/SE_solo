@@ -6,6 +6,7 @@ import logging
 import time
 import sqlalchemy.exc
 
+# initialize the flask api
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -15,6 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+# class to define a person
 class Person(db.Model):
     __tablename__ = 'persons'
     PersonID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -24,6 +26,7 @@ class Person(db.Model):
     City = db.Column(db.String(100), nullable=False)
     BirthDate = db.Column(db.Date, nullable=False)
 
+# create tables
 def create_tables():
     with app.app_context():
         for _ in range(10):
@@ -33,6 +36,7 @@ def create_tables():
             except sqlalchemy.exc.OperationalError:
                 time.sleep(2)
 
+# insert a default person to the database
 def insert_default_person():
     with app.app_context():
         if not Person.query.filter_by(FirstName="Max", Surname="Müller", Address="Musterstraße 1", City="Berlin", BirthDate="1992-07-10").first():
@@ -49,10 +53,12 @@ def insert_default_person():
 create_tables()
 insert_default_person()
 
+# test route
 @app.route('/test', methods=['GET'])
 def test():
     return make_response(jsonify({'message': 'Flask API is running.'}), 200)
 
+# post route
 @app.route('/persons', methods=['POST'])
 def create_person():
     try:
@@ -81,6 +87,7 @@ def create_person():
         logging.error(f'An error occurred while creating a person: {str(e)}')
         return make_response(jsonify({'message': 'An error occurred while creating a person', 'error': str(e)}), 500)
 
+# get route for all persons
 @app.route('/persons', methods=['GET'])
 def get_persons():
     persons = Person.query.order_by(Person.PersonID).all()
@@ -94,6 +101,7 @@ def get_persons():
     } for p in persons]
     return jsonify(result)
 
+# get route for a person by id
 @app.route('/persons/<int:person_id>', methods=['GET'])
 def get_person_by_id(person_id):
     person = Person.query.get(person_id)
@@ -108,6 +116,7 @@ def get_person_by_id(person_id):
         })
     return make_response(jsonify({'message': 'Person not found'}), 404)
 
+# put route to update a person
 @app.route('/persons/<int:person_id>', methods=['PUT'])
 def update_person(person_id):
     try:
@@ -129,6 +138,7 @@ def update_person(person_id):
         logging.error(f'An error occurred while updating a person: {str(e)}')
         return make_response(jsonify({'message': 'An error occurred while updating a person', 'error': str(e)}), 500)
 
+# route to delete a person by id
 @app.route('/persons/<int:person_id>', methods=['DELETE'])
 def delete_person(person_id):
     person = Person.query.get(person_id)
