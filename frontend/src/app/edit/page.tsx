@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Layout from "../components/Layout";
 
+// define the data for a person
 interface Person {
   PersonID: number;
   FirstName: string;
@@ -14,6 +15,7 @@ interface Person {
 }
 
 export default function EditPersons() {
+  // States for managing the list of people and processing
   const [persons, setPersons] = useState<Person[]>([]);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [originalPerson, setOriginalPerson] = useState<Person | null>(null);
@@ -24,10 +26,12 @@ export default function EditPersons() {
   const [errorFields, setErrorFields] = useState<string[]>([]);
   const router = useRouter();
 
+  // Data is retrieved when loading the component
   useEffect(() => {
     fetchPersons();
   }, []);
 
+  // Function to get people list from API
   const fetchPersons = () => {
     fetch("http://127.0.0.1:4000/persons")
       .then((res) => res.json())
@@ -35,6 +39,7 @@ export default function EditPersons() {
       .catch(console.error);
   };
 
+  // Validate user input
   const validateInput = () => {
     const errors: string[] = [];
 
@@ -48,6 +53,7 @@ export default function EditPersons() {
     return errors.length === 0;
   };
 
+  // checks if a similar person already exists
   const checkForSimilarPerson = () => {
     if (!selectedPerson) return false;
 
@@ -55,7 +61,7 @@ export default function EditPersons() {
       (p) =>
         p.FirstName === selectedPerson.FirstName &&
         p.BirthDate === selectedPerson.BirthDate &&
-        p.PersonID !== selectedPerson.PersonID // Prüft, dass es sich nicht um dieselbe Person handelt
+        p.PersonID !== selectedPerson.PersonID
     );
 
     if (foundPerson) {
@@ -73,6 +79,7 @@ export default function EditPersons() {
     return false;
   };
 
+  // merge two similar persons
   const handleMergeAndDelete = async () => {
     if (!selectedPerson || !similarPerson) return;
 
@@ -89,6 +96,7 @@ export default function EditPersons() {
         }),
       });
 
+      // delete the old person
       await fetch(`http://127.0.0.1:4000/persons/${selectedPerson.PersonID}`, {
         method: "DELETE",
       });
@@ -103,6 +111,7 @@ export default function EditPersons() {
     }
   };
 
+  // Updates the personal data, but checks for possible conflicts beforehand
   const handleUpdateWithCheck = () => {
     if (!selectedPerson) {
       setErrorMessage("Keine Person ausgewählt.");
@@ -122,6 +131,7 @@ export default function EditPersons() {
     handleUpdateWithoutCheck();
   };
 
+  // Updates personal data without additional checks
   const handleUpdateWithoutCheck = () => {
     if (!selectedPerson) return;
 
@@ -152,6 +162,7 @@ export default function EditPersons() {
       .catch(() => setErrorMessage("Fehler beim Aktualisieren der Person."));
   };
 
+  // If confirmation is rejected, the data will still be saved
   const handleRejectUpdate = () => {
     setShowConfirmation(false);
     handleUpdateWithoutCheck();

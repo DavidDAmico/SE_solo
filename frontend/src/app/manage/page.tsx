@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 
+// define the data for a person
 interface Person {
   PersonID: number;
   FirstName: string;
@@ -13,6 +14,7 @@ interface Person {
 }
 
 export default function ManagePersons() {
+    // States for managing the list of people and processing
   const [persons, setPersons] = useState<Person[]>([]);
   const [newPerson, setNewPerson] = useState({ first_name: "", surname: "", address: "", city: "", birth_date: "" });
   const [errorFields, setErrorFields] = useState<string[]>([]);
@@ -21,10 +23,12 @@ export default function ManagePersons() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedExistingPerson, setSelectedExistingPerson] = useState<Person | null>(null);
 
+  // Data is retrieved when loading the component
   useEffect(() => {
     fetchPersons();
   }, []);
 
+  // Function to get people list from API
   const fetchPersons = () => {
     fetch("http://127.0.0.1:4000/persons")
       .then((res) => res.json())
@@ -32,6 +36,7 @@ export default function ManagePersons() {
       .catch(console.error);
   };
 
+  // Validate user input
   const validateInput = () => {
     const errors: string[] = [];
     if (!newPerson.first_name || /[^a-zA-ZäöüÄÖÜßÀ-ÿ'\s-]/.test(newPerson.first_name)) errors.push("first_name");
@@ -44,12 +49,13 @@ export default function ManagePersons() {
     return errors.length === 0;
   };
 
+  // checks if a similar person already exists
   const checkForSimilarPerson = () => {
     const similarPerson = persons.find(
       (p) =>
         p.FirstName === newPerson.first_name &&
         p.BirthDate === newPerson.birth_date &&
-        p.PersonID !== selectedExistingPerson?.PersonID // Prüft, dass es sich nicht um dieselbe Person handelt
+        p.PersonID !== selectedExistingPerson?.PersonID
     );
 
     if (similarPerson) {
@@ -66,6 +72,7 @@ export default function ManagePersons() {
     return false;
   };
 
+  // create a new person
   const handleCreate = () => {
     setSuccessMessage(null);
     setErrorMessage(null);
@@ -82,7 +89,7 @@ export default function ManagePersons() {
 
     addNewPerson();
   };
-
+  // Submits a new person to the API
   const addNewPerson = () => {
     fetch("http://127.0.0.1:4000/persons", {
       method: "POST",
